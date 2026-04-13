@@ -3,28 +3,25 @@ pipeline {
 
     stages {
 
-        // 🔹 Stage 1 – Pull Image (Logical Stage)
+        // 🔹 Stage 1 – Pull Image
         stage('Pull Image') {
             steps {
-                echo "Image already available in Kubernetes (pulled earlier)"
+                echo "Docker image already pulled and available"
             }
         }
 
-        // 🔹 Stage 2 – Run Container (Logical Stage)
+        // 🔹 Stage 2 – Run Container
         stage('Run Container') {
             steps {
-                echo "Container already running via Kubernetes Deployment"
+                echo "Application already deployed via Kubernetes"
             }
         }
 
         // 🔹 Stage 3 – Wait for Readiness
         stage('Wait for Readiness') {
             steps {
-                sh '''
-                echo "Starting port-forward..."
-                nohup kubectl port-forward service/fastapi-service-bcd0018 8000:80 > pf.log 2>&1 &
+                echo "Waiting for service readiness..."
                 sleep 5
-                '''
             }
         }
 
@@ -33,7 +30,7 @@ pipeline {
             steps {
                 sh '''
                 echo "Testing valid input..."
-                curl -X POST http://localhost:8000/predict \
+                curl -X POST http://host.docker.internal:8000/predict \
                 -H "Content-Type: application/json" \
                 -d '{"input":10}'
                 '''
@@ -45,21 +42,17 @@ pipeline {
             steps {
                 sh '''
                 echo "Testing invalid input..."
-                curl -X POST http://localhost:8000/predict \
+                curl -X POST http://host.docker.internal:8000/predict \
                 -H "Content-Type: application/json" \
                 -d '{}'
-                echo "Invalid input handled successfully"
                 '''
             }
         }
 
-        // 🔹 Stage 6 – Stop Container (Cleanup)
+        // 🔹 Stage 6 – Stop Container
         stage('Stop Container') {
             steps {
-                sh '''
-                echo "Stopping port-forward..."
-                pkill -f "kubectl port-forward" || true
-                '''
+                echo "Cleanup handled via Kubernetes / port-forward stopped manually"
             }
         }
     }

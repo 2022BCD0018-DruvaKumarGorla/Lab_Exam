@@ -30,6 +30,7 @@ pipeline {
             steps {
                 sh '''
                 echo "Testing valid input..."
+                echo "Druva Kumar - 2022BCD0018"
                 curl -X POST http://host.docker.internal:8000/predict \
                 -H "Content-Type: application/json" \
                 -d '{"input":10}'

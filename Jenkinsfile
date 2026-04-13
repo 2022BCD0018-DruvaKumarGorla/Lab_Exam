@@ -1,34 +1,30 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = "druva21/fastapi-app-bcd0018"
-    }
-
     stages {
 
         stage('Pull Image') {
             steps {
-                sh 'docker pull $IMAGE_NAME'
+                echo 'Image already pulled manually'
             }
         }
 
         stage('Run Container') {
             steps {
-                sh 'docker run -d -p 8000:8000 $IMAGE_NAME'
+                echo 'Container already running via Kubernetes'
             }
         }
 
         stage('Wait for Readiness') {
             steps {
-                sleep 10
+                sleep 5
             }
         }
 
         stage('Valid Inference') {
             steps {
                 sh '''
-                curl -X POST http://localhost:8000/predict \
+                curl -X POST http://host.docker.internal:30007/predict \
                 -H "Content-Type: application/json" \
                 -d '{"input":10}'
                 '''
@@ -38,7 +34,7 @@ pipeline {
         stage('Invalid Inference') {
             steps {
                 sh '''
-                curl -X POST http://localhost:8000/predict \
+                curl -X POST http://host.docker.internal:30007/predict \
                 -H "Content-Type: application/json" \
                 -d '{}'
                 '''
@@ -47,7 +43,7 @@ pipeline {
 
         stage('Stop Container') {
             steps {
-                sh 'docker stop $(docker ps -q)'
+                echo 'Handled by Kubernetes'
             }
         }
     }
